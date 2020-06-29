@@ -11,7 +11,7 @@ class AnswersWidget extends StatefulWidget {
 
   final Question question;
   final bool areEnabled;
-  final void Function() onAnswerCallback;
+  final void Function(bool) onAnswerCallback;
 
   @override
   AnswersWidgetState createState() => AnswersWidgetState();
@@ -20,9 +20,16 @@ class AnswersWidget extends StatefulWidget {
 class AnswersWidgetState extends State<AnswersWidget> {
   num selectedIndex = -1;
 
+  @override
+  void initState() {
+    super.initState();
+
+  }
+
   void _onChangedCallback(num value) {
-    widget.onAnswerCallback();
     setState(() {
+      int correctIndex = widget.question.answers.indexWhere((o) => o.isCorrect);
+      widget.onAnswerCallback(correctIndex == value);
       selectedIndex = value;
     });
   }
@@ -45,7 +52,10 @@ class AnswersWidgetState extends State<AnswersWidget> {
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text(widget.question.text),
+          child: Text(widget.question.text, style: TextStyle(
+            color: Colors.black,
+            fontSize: 32
+          ),),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0.0),
@@ -77,38 +87,42 @@ class SingleAnswerWidget extends StatefulWidget {
 }
 
 class _SingleAnswerWidgetState extends State<SingleAnswerWidget> {
-  String _getText() {
+
+  Color _getBackgroundColor() {
     if (widget.isEnabled) {
-      return widget.answer.text;
+      return Colors.white;
     } else if (widget.index == widget.selectedIndex) {
       if (widget.answer.isCorrect) {
-        return widget.answer.text + " - PARABÉNS, VOCÊ ACERTOU";
+        return Colors.green;
       } else {
-        return widget.answer.text + " - QUE PENA, VOCÊ ERROU";
+        return Colors.red;
       }
     } else if (widget.answer.isCorrect) {
-      return widget.answer.text + " - ESTA ERA A RESPOSTA CERTA";
+      return Colors.yellow;
     } else {
-      return widget.answer.text;
+      return Colors.white;
     }
   }
 
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: ListTile(
-        title: Text(
-          _getText(),
-          style: TextStyle(color: Colors.black),
-        ),
-        leading: Radio(
-          value: widget.index,
-          groupValue: widget.selectedIndex,
-          onChanged: (num value) {
-            if (widget.isEnabled) {
-              widget.onChangedCallback(value);
-            }
-          },
+      child: Container(
+        color: _getBackgroundColor(),
+        child: ListTile(
+          title: Text(
+            widget.answer.text,
+            style: TextStyle(color: Colors.black, fontSize: 20),
+          ),
+          leading: Radio(
+            value: widget.index,
+            groupValue: widget.selectedIndex,
+            onChanged: (num value) {
+              if (widget.isEnabled) {
+                widget.onChangedCallback(value);
+              }
+            },
+          ),
         ),
       ),
     );
